@@ -1,4 +1,4 @@
-🏪 Dark Store and Zone Registry Management System
+Dark Store and Zone Registry Management System
 
 A full-stack **Database Management System (DBMS)** mini project that manages dark stores (warehouse-like stores for quick commerce), delivery zones, inventory, employees, and orders.
 
@@ -6,7 +6,7 @@ A full-stack **Database Management System (DBMS)** mini project that manages dar
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Project Overview](#-project-overview)
 - [Tech Stack](#-tech-stack)
@@ -22,7 +22,7 @@ A full-stack **Database Management System (DBMS)** mini project that manages dar
 
 ---
 
-## 🎯 Project Overview
+## Project Overview
 
 This system manages the operations of **dark stores** — warehouse-style fulfillment centers used in quick commerce. It covers:
 
@@ -49,28 +49,28 @@ This system manages the operations of **dark stores** — warehouse-style fulfil
 
 ---
 
-## ✨ Features
+##  Features
 
 ### Core CRUD Operations
-- ✅ **Dark Stores** — Create, Read, Update, Delete with search
-- ✅ **Zones** — Full CRUD for delivery zones
-- ✅ **Inventory** — Product management with store-wise filtering
-- ✅ **Employees** — Staff management with role assignments
-- ✅ **Orders** — Order creation with status tracking
+- **Dark Stores** — Create, Read, Update, Delete with search
+- **Zones** — Full CRUD for delivery zones
+- **Inventory** — Product management with store-wise filtering
+- **Employees** — Staff management with role assignments
+- **Orders** — Order creation with status tracking
 
 ### Advanced Features
-- 📊 **Dashboard** — Real-time statistics with 6 KPI cards
-- 📈 **Analytics** — Bar, Pie, Area charts for data visualization
-- 🔍 **Search** — Store search by name, address, manager
-- 🔔 **Low Stock Alerts** — Inventory items below threshold
-- 🏷️ **Status Badges** — Color-coded order and store statuses
-- 🔐 **SQL Injection Prevention** — Parameterized queries throughout
-- 🔄 **Transactions** — Order creation with transaction support
-- 🎨 **Dark Theme UI** — Premium glassmorphism design
+- **Dashboard** — Real-time statistics with 6 KPI cards
+- **Analytics** — Bar, Pie, Area charts for data visualization
+- **Search** — Store search by name, address, manager
+- **Low Stock Alerts** — Inventory items below threshold
+- **Status Badges** — Color-coded order and store statuses
+- **SQL Injection Prevention** — Parameterized queries throughout
+- **Transactions** — Order creation with transaction support
+- **Dark Theme UI** — Premium glassmorphism design
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```
 dark-store-management/
@@ -143,7 +143,7 @@ dark-store-management/
 
 ---
 
-## 📐 ER Diagram
+## ER Diagram
 
 ### Entity-Relationship Description
 
@@ -200,7 +200,7 @@ dark-store-management/
 
 ---
 
-## 📊 Relational Schema
+## Relational Schema
 
 ```sql
 zones(zone_id PK, zone_name, city, pincode, delivery_radius)
@@ -220,8 +220,7 @@ orders(order_id PK, customer_name, customer_address,
 ```
 
 ---
-
-## 🎓 Database Concepts Demonstrated
+## Database Concepts Demonstrated
 
 | Concept                | Where Implemented                                    |
 |------------------------|------------------------------------------------------|
@@ -247,7 +246,7 @@ orders(order_id PK, customer_name, customer_address,
 
 ---
 
-## 🚀 Setup & Installation
+## Setup & Installation
 
 ### Prerequisites
 
@@ -465,3 +464,5 @@ SELECT z.city, COUNT(o.order_id) AS total_orders,
 FROM zones z LEFT JOIN orders o ON z.zone_id = o.zone_id
 GROUP BY z.city;
 ```
+## Screenshots
+<img width="1919" height="910" alt="Screenshot 2026-05-17 174236" src="https://github.com/user-attachments/assets/b1b0c16a-1f07-487c-9196-c285cde705b0" />

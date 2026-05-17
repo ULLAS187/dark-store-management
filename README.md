@@ -465,4 +465,8 @@ FROM zones z LEFT JOIN orders o ON z.zone_id = o.zone_id
 GROUP BY z.city;
 ```
 ## Screenshots
+<img width="1914" height="891" alt="Screenshot 2026-05-17 174119" src="https://github.com/user-attachments/assets/f26f57f7-e6b6-460c-b5cd-a938727dcdcf" />
+
+<img width="1912" height="904" alt="Screenshot 2026-05-17 174217" src="https://github.com/user-attachments/assets/b9f71e2a-96f8-4428-8f25-590ccd08b8f7" />
+
 <img width="1919" height="910" alt="Screenshot 2026-05-17 174236" src="https://github.com/user-attachments/assets/b1b0c16a-1f07-487c-9196-c285cde705b0" />

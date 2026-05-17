@@ -1,4 +1,4 @@
-mysudo # 🏪 Dark Store and Zone Registry Management System
+🏪 Dark Store and Zone Registry Management System
 
 A full-stack **Database Management System (DBMS)** mini project that manages dark stores (warehouse-like stores for quick commerce), delivery zones, inventory, employees, and orders.
 
@@ -465,17 +465,3 @@ SELECT z.city, COUNT(o.order_id) AS total_orders,
 FROM zones z LEFT JOIN orders o ON z.zone_id = o.zone_id
 GROUP BY z.city;
 ```
-
----
-
-## 📸 Screenshots
-
-> After running the project, you can capture screenshots of:
-
-1. **Dashboard** — Overview with stat cards and charts
-2. **Dark Stores** — Store listing with search
-3. **Zones** — Zone management table
-4. **Inventory** — Product list with low stock alerts
-5. **Employees** — Employee listing by store
-6. **Orders** — Order management with status updates
-7. **Analytics** — Detailed charts and performance metrics

@@ -66,7 +66,7 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="p-4 border-t border-white/[0.06]">
         <div className="glass-light rounded-xl p-4">
-          <p className="text-xs text-dark-500 text-center">DBMS Mini Project</p>
+          <p className="text-xs text-dark-500 text-center">DarkStore Management</p>
           <p className="text-[10px] text-dark-600 text-center mt-1">v1.0.0</p>
         </div>
       </div>

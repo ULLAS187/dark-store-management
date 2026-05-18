@@ -2,10 +2,6 @@ Dark Store and Zone Registry Management System
 
 A full-stack **Database Management System (DBMS)** mini project that manages dark stores (warehouse-like stores for quick commerce), delivery zones, inventory, employees, and orders.
 
-> **Built for:** Engineering DBMS Mini Project Submission & Demonstration
-
----
-
 ## Table of Contents
 
 - [Project Overview](#-project-overview)

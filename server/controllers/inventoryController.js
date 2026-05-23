@@ -178,11 +178,33 @@ const deleteInventory = async (req, res, next) => {
   }
 };
 
+/**
+ * GET /api/inventory/products/:storeId
+ * Retrieve all in-stock products for a specific store (for order creation dropdown)
+ * Returns product_id, product_name, quantity, price, category
+ */
+const getProductsByStore = async (req, res, next) => {
+  try {
+    const { storeId } = req.params;
+    const [rows] = await pool.query(
+      `SELECT product_id, product_name, category, quantity, price
+       FROM inventory
+       WHERE store_id = ? AND quantity > 0
+       ORDER BY product_name ASC`,
+      [storeId]
+    );
+    res.json({ success: true, data: rows, count: rows.length });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllInventory,
   getInventoryById,
   getInventoryByStore,
   getLowStock,
+  getProductsByStore,
   createInventory,
   updateInventory,
   deleteInventory

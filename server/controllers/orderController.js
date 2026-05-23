@@ -3,7 +3,7 @@
  * ------------------
  * Handles all CRUD operations for order management.
  * Includes zone-wise and store-wise filtering with JOIN queries.
- * Demonstrates transactions for order creation.
+ * Demonstrates transactions for order creation with inventory validation.
  * Uses parameterized queries to prevent SQL injection.
  */
 
@@ -11,15 +11,19 @@ const { pool } = require('../config/db');
 
 /**
  * GET /api/orders
- * Retrieve all orders with zone and store details (multi-table JOIN)
+ * Retrieve all orders with zone, store, and product details (multi-table JOIN)
  */
 const getAllOrders = async (req, res, next) => {
   try {
     const [rows] = await pool.query(`
-      SELECT o.*, z.zone_name, z.city, ds.store_name
+      SELECT o.*,
+             z.zone_name, z.city,
+             ds.store_name,
+             i.product_name, i.price AS unit_price
       FROM orders o
-      INNER JOIN zones z ON o.zone_id = z.zone_id
-      INNER JOIN dark_stores ds ON o.store_id = ds.store_id
+      INNER JOIN zones z        ON o.zone_id    = z.zone_id
+      INNER JOIN dark_stores ds ON o.store_id   = ds.store_id
+      LEFT  JOIN inventory i    ON o.product_id = i.product_id
       ORDER BY o.order_date DESC
     `);
     res.json({ success: true, data: rows, count: rows.length });
@@ -36,10 +40,14 @@ const getOrderById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query(`
-      SELECT o.*, z.zone_name, z.city, ds.store_name
+      SELECT o.*,
+             z.zone_name, z.city,
+             ds.store_name,
+             i.product_name, i.price AS unit_price
       FROM orders o
-      INNER JOIN zones z ON o.zone_id = z.zone_id
-      INNER JOIN dark_stores ds ON o.store_id = ds.store_id
+      INNER JOIN zones z        ON o.zone_id    = z.zone_id
+      INNER JOIN dark_stores ds ON o.store_id   = ds.store_id
+      LEFT  JOIN inventory i    ON o.product_id = i.product_id
       WHERE o.order_id = ?
     `, [id]);
 
@@ -61,10 +69,14 @@ const getOrdersByZone = async (req, res, next) => {
   try {
     const { zoneId } = req.params;
     const [rows] = await pool.query(`
-      SELECT o.*, z.zone_name, z.city, ds.store_name
+      SELECT o.*,
+             z.zone_name, z.city,
+             ds.store_name,
+             i.product_name
       FROM orders o
-      INNER JOIN zones z ON o.zone_id = z.zone_id
-      INNER JOIN dark_stores ds ON o.store_id = ds.store_id
+      INNER JOIN zones z        ON o.zone_id    = z.zone_id
+      INNER JOIN dark_stores ds ON o.store_id   = ds.store_id
+      LEFT  JOIN inventory i    ON o.product_id = i.product_id
       WHERE o.zone_id = ?
       ORDER BY o.order_date DESC
     `, [zoneId]);
@@ -83,10 +95,14 @@ const getOrdersByStore = async (req, res, next) => {
   try {
     const { storeId } = req.params;
     const [rows] = await pool.query(`
-      SELECT o.*, z.zone_name, z.city, ds.store_name
+      SELECT o.*,
+             z.zone_name, z.city,
+             ds.store_name,
+             i.product_name
       FROM orders o
-      INNER JOIN zones z ON o.zone_id = z.zone_id
-      INNER JOIN dark_stores ds ON o.store_id = ds.store_id
+      INNER JOIN zones z        ON o.zone_id    = z.zone_id
+      INNER JOIN dark_stores ds ON o.store_id   = ds.store_id
+      LEFT  JOIN inventory i    ON o.product_id = i.product_id
       WHERE o.store_id = ?
       ORDER BY o.order_date DESC
     `, [storeId]);
@@ -99,24 +115,32 @@ const getOrdersByStore = async (req, res, next) => {
 
 /**
  * POST /api/orders
- * Create a new order using a transaction for data integrity
+ * Create a new order using a transaction for data integrity.
+ * - Validates product existence in inventory for the selected store.
+ * - Checks sufficient stock quantity.
+ * - Atomically deducts stock on success.
  */
 const createOrder = async (req, res, next) => {
   const connection = await pool.getConnection();
   try {
-    const { customer_name, customer_address, zone_id, store_id, order_amount } = req.body;
+    const { customer_name, customer_address, zone_id, store_id, product_id, quantity, order_amount } = req.body;
 
-    if (!customer_name || !customer_address || !zone_id || !store_id || !order_amount) {
+    // Field validation
+    if (!customer_name || !customer_address || !zone_id || !store_id || !product_id || !quantity || !order_amount) {
       return res.status(400).json({
         success: false,
-        message: 'All fields are required: customer_name, customer_address, zone_id, store_id, order_amount'
+        message: 'All fields are required: customer_name, customer_address, zone_id, store_id, product_id, quantity, order_amount'
       });
+    }
+
+    if (parseInt(quantity) <= 0) {
+      return res.status(400).json({ success: false, message: 'Quantity must be greater than 0' });
     }
 
     // Begin transaction
     await connection.beginTransaction();
 
-    // Verify store exists and is active
+    // 1. Verify store exists and is active
     const [stores] = await connection.query(
       'SELECT store_id FROM dark_stores WHERE store_id = ? AND status = "Active"',
       [store_id]
@@ -130,7 +154,7 @@ const createOrder = async (req, res, next) => {
       });
     }
 
-    // Verify zone exists
+    // 2. Verify zone exists
     const [zones] = await connection.query(
       'SELECT zone_id FROM zones WHERE zone_id = ?',
       [zone_id]
@@ -144,11 +168,41 @@ const createOrder = async (req, res, next) => {
       });
     }
 
-    // Insert the order
+    // 3. Check inventory stock — lock the row to prevent race conditions
+    const [inventoryRows] = await connection.query(
+      'SELECT product_id, product_name, quantity, price FROM inventory WHERE product_id = ? AND store_id = ? FOR UPDATE',
+      [product_id, store_id]
+    );
+
+    if (inventoryRows.length === 0) {
+      await connection.rollback();
+      return res.status(400).json({
+        success: false,
+        message: 'Product not found in inventory for this store'
+      });
+    }
+
+    const inventoryItem = inventoryRows[0];
+
+    if (inventoryItem.quantity < parseInt(quantity)) {
+      await connection.rollback();
+      return res.status(400).json({
+        success: false,
+        message: `Product out of stock. Available: ${inventoryItem.quantity} unit(s)`
+      });
+    }
+
+    // 4. Deduct inventory stock
+    await connection.query(
+      'UPDATE inventory SET quantity = quantity - ? WHERE product_id = ? AND store_id = ?',
+      [parseInt(quantity), product_id, store_id]
+    );
+
+    // 5. Insert the order
     const [result] = await connection.query(
-      `INSERT INTO orders (customer_name, customer_address, zone_id, store_id, order_amount) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [customer_name, customer_address, zone_id, store_id, order_amount]
+      `INSERT INTO orders (customer_name, customer_address, zone_id, store_id, product_id, quantity, order_amount)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [customer_name, customer_address, zone_id, store_id, product_id, parseInt(quantity), order_amount]
     );
 
     // Commit the transaction
@@ -157,7 +211,13 @@ const createOrder = async (req, res, next) => {
     res.status(201).json({
       success: true,
       message: 'Order created successfully',
-      data: { order_id: result.insertId, ...req.body, delivery_status: 'Pending' }
+      data: {
+        order_id: result.insertId,
+        ...req.body,
+        product_name: inventoryItem.product_name,
+        delivery_status: 'Pending',
+        remaining_stock: inventoryItem.quantity - parseInt(quantity)
+      }
     });
   } catch (error) {
     await connection.rollback();

@@ -10,6 +10,7 @@ const {
   getInventoryById,
   getInventoryByStore,
   getLowStock,
+  getProductsByStore,
   createInventory,
   updateInventory,
   deleteInventory
@@ -17,6 +18,9 @@ const {
 
 // GET low stock items (must be before /:id)
 router.get('/low-stock', getLowStock);
+
+// GET products by store for order creation dropdown (must be before /store/:storeId and /:id)
+router.get('/products/:storeId', getProductsByStore);
 
 // GET inventory by store
 router.get('/store/:storeId', getInventoryByStore);

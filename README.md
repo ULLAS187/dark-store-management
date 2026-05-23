@@ -1,18 +1,11 @@
-<<<<<<< HEAD
 Dark Store and Zone Registry Management System
-=======
-# Dark Store and Zone Registry Management System
->>>>>>> 887c46c (create_order updated)
 
 A full-stack **Database Management System (DBMS)** mini project that manages dark stores (warehouse-like fulfillment centers for quick commerce), delivery zones, inventory, employees, and orders — with **inventory-aware order creation** and automatic stock management.
 
-<<<<<<< HEAD
-=======
 > **Built for:** Engineering DBMS Mini Project Submission & Demonstration
 
 ---
 
->>>>>>> 887c46c (create_order updated)
 ## Table of Contents
 
 - [Project Overview](#project-overview)
@@ -55,48 +48,23 @@ This system manages the operations of **dark stores** — warehouse-style fulfil
 
 ---
 
-<<<<<<< HEAD
 ##  Features
-=======
-## Features
->>>>>>> 887c46c (create_order updated)
 
 ### Core CRUD Operations
 - **Dark Stores** — Create, Read, Update, Delete with search
 - **Zones** — Full CRUD for delivery zones
-<<<<<<< HEAD
 - **Inventory** — Product management with store-wise filtering
 - **Employees** — Staff management with role assignments
 - **Orders** — Order creation with status tracking
-=======
-- **Inventory** — Product management with store-wise filtering and low-stock alerts
-- **Employees** — Staff management with role assignments
-- **Orders** — Inventory-aware order creation with delivery status tracking
-
-### Inventory-Aware Order Creation (Latest Feature)
-- **Product Dropdown** — Searchable product list populated dynamically from inventory, filtered by the selected store
-- **Stock Validation** — Prevents orders when requested quantity exceeds available stock; shows real-time stock badge (green / yellow / red status)
-- **Auto-Calculated Amount** — Order amount is automatically computed as `price * quantity`
-- **Atomic Stock Deduction** — Inventory is reduced inside the same DB transaction as the order insert (no partial updates)
-- **Negative Stock Prevention** — DB-level trigger `trg_check_inventory_quantity` rejects any update that would make quantity < 0
->>>>>>> 887c46c (create_order updated)
 
 ### Advanced Features
 - **Dashboard** — Real-time statistics with 6 KPI cards
 - **Analytics** — Bar, Pie, Area charts for data visualization
-<<<<<<< HEAD
 - **Search** — Store search by name, address, manager
 - **Low Stock Alerts** — Inventory items below threshold
 - **Status Badges** — Color-coded order and store statuses
 - **SQL Injection Prevention** — Parameterized queries throughout
 - **Transactions** — Order creation with transaction support
-=======
-- **Search** — Store search by name, address, manager; product search in order form
-- **Low Stock Alerts** — Inventory items below threshold highlighted
-- **Status Badges** — Color-coded order and store statuses
-- **SQL Injection Prevention** — Parameterized queries throughout
-- **Transactions** — Order creation with `BEGIN / COMMIT / ROLLBACK` and `FOR UPDATE` row locking
->>>>>>> 887c46c (create_order updated)
 - **Dark Theme UI** — Premium glassmorphism design
 
 ---
@@ -176,11 +144,8 @@ dark-store-management/
 ---
 
 ## ER Diagram
-<<<<<<< HEAD
 
 ### Entity-Relationship Description
-=======
->>>>>>> 887c46c (create_order updated)
 
 ```
 ┌──────────────┐       1:M       ┌──────────────────┐
@@ -260,10 +225,6 @@ orders(order_id PK, customer_name, customer_address,
 ```
 
 ---
-<<<<<<< HEAD
-=======
-
->>>>>>> 887c46c (create_order updated)
 ## Database Concepts Demonstrated
 
 | Concept                | Where Implemented                                              |
@@ -556,54 +517,6 @@ GROUP BY z.city;
 ## Screenshots
 <img width="1914" height="891" alt="Screenshot 2026-05-17 174119" src="https://github.com/user-attachments/assets/f26f57f7-e6b6-460c-b5cd-a938727dcdcf" />
 
-<<<<<<< HEAD
 <img width="1912" height="904" alt="Screenshot 2026-05-17 174217" src="https://github.com/user-attachments/assets/b9f71e2a-96f8-4428-8f25-590ccd08b8f7" />
 
 <img width="1919" height="910" alt="Screenshot 2026-05-17 174236" src="https://github.com/user-attachments/assets/b1b0c16a-1f07-487c-9196-c285cde705b0" />
-=======
-### 10. In-Stock Products for a Store (Order Form Dropdown)
-```sql
-SELECT product_id, product_name, category, quantity, price
-FROM inventory
-WHERE store_id = ? AND quantity > 0
-ORDER BY product_name ASC;
-```
-
----
-
-## Inventory-Aware Order Workflow
-
-```
-User opens "Create Order"
-        │
-        ▼
-Select Zone + Store
-        │
-        ▼
-Product dropdown loads (GET /inventory/products/:storeId)
-        │
-        ▼
-User selects product → stock badge shown (green/yellow/red status)
-        │
-        ▼
-User enters quantity → Order Amount auto-calculated (price * qty)
-        │
-        ▼
-        ┌──────────────────────────────────────┐
-        │        POST /orders (transaction)    │
-        │  1. Verify store is Active           │
-        │  2. Verify zone exists               │
-        │  3. SELECT ... FOR UPDATE on product │
-        │  4. Check quantity >= requested      │
-        │  5. UPDATE inventory (deduct stock)  │
-        │  6. INSERT into orders               │
-        │  7. COMMIT                           │
-        └──────────────────────────────────────┘
-        │                    │
-        ▼                    ▼
-   Stock OK            Stock insufficient
-   Order created       400: "Product out of stock"
-   Inventory updated   Order not created
-   Success toast       Error toast shown
-```
->>>>>>> 887c46c (create_order updated)
